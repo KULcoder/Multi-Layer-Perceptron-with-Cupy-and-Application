@@ -66,12 +66,16 @@ def normalize_data(inp, axis=1):
     
     return np.concatenate(Z, axis=1) # concat the three channels back
 
-def one_hot_encoding(array):
+def one_hot_encode(array, mapping_dict=None):
     """
     Efficient method doing one_hot_encoding on a 1-d numpy array. 
+    TODO: adding the function to provide mapping_dict directly...
     
     Input:
-        An 1-d numpy array needed to be one hot encoded.
+        array:
+            An 1-d cupy array needed to be one hot encoded.
+        mapping_dict:
+            An mapping dictionary ... TODO
     Output:
         An tuple contains:
             1. numpy matrix: the one-hot encoded result in a form as an  
@@ -96,5 +100,44 @@ def one_hot_encoding(array):
     # Return the one-hot encoded array and mapping dictionary
     return one_hot_encoded_array, mapping_dict
 
+def one_hot_decode(y, mapping_dict=None):
+    """
+    Given a mapping_dict or not. Decode the one-hot-encoded matrix.
 
+    Input:
+        y:
+            Some one-hot encoded array
+        mapping_dict:
+            ...TODO
+    Output:
+        array:
+            A decoded cupy ndaaray.
+    """
 
+# Following functions are directly relate to data loading
+def generate_minibatches(dataset, batch_size=64):
+    """
+    Yield minibathces from the whole dataset. When the length of the dataset can't be directly 
+    divide by batch_size, the last output will have length smaller than batch_size.
+
+    Input:
+        dataset:
+            shape: (X, y) A tuple contains cupy ndarrays format dataset. Rows represent the individual data.
+        batch_size:
+            How large wish for one minibatch
+    Yield:
+        (X, y):
+            tuple of size = batch_size
+    """
+
+    X, y = dataset
+    
+    left_index, right_index = 0, batch_size
+
+    while right_index < len(X):
+        # while we have enough existing position for right_index
+        yield X[left_index:right_index], y[left_index:right_index]
+        left_index, right_index = right_index, right_index + batch_size
+
+    # provide whataver left
+    yield X[left_index:], y[left_index:]
