@@ -25,4 +25,4 @@ statistics = model.train(X_train, y_train, X_valid, y_valid)
 # use the model to generate predict test
 y_test_pred = model.forward(X_test)
 
-# somehow change change 
+# calculate matrics and demonstrate result
