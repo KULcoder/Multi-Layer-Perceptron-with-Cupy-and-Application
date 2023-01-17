@@ -10,17 +10,6 @@ import pandas as pd
 
 # model helper functions
 # function should explicitly states if it uses CUPY
-def load_config(path):
-    """
-    TODO: change this into a different style
-    Loads the config yaml from the specified path
-
-    args:
-        path - Complete path of the config yaml file to be loaded
-    returns:
-        yaml - yaml object containing the config file
-    """
-    return None
 
 def append_bias(X):
     """
@@ -30,7 +19,6 @@ def append_bias(X):
     returns:
         X_bias (N X (d+1)) 2D Array
     """
-
     return np.append(X, np.full((len(X), 1), 1), axis = 1) 
 
 
@@ -79,21 +67,15 @@ def normalize_data(inp, axis=1):
     
     return cp.asnumpy(cp.concatenate(Z, axis=1)) # concat the three channels back
 
-def one_hot_encode(array, mapping_dict=None):
+def one_hot_encode(array):
     """
     Efficient method doing one_hot_encoding on a 1-d numpy array. Using CUPY
-    TODO: adding the function to provide mapping_dict directly...
     
     Input:
         array:
             An 1-d cupy array needed to be one hot encoded.
-        mapping_dict:
-            An mapping dictionary ... TODO
     Output:
-        An tuple contains:
-            1. numpy matrix: the one-hot encoded result in a form as an  
-                (do we need sparse matrix implementation?)
-            2. python dictionary: mapping dictionary.
+            numpy matrix: the one-hot encoded result
     """
 
     # ensure right input datatype
@@ -110,31 +92,29 @@ def one_hot_encode(array, mapping_dict=None):
     
     # Initialize the one-hot encoded array and mapping dictionary
     one_hot_encoded_array = cp.zeros((len(array), len(unique_values)), dtype=cp.int8)
-    mapping_dict = {}
     
     # Iterate over the unique values and build the one-hot encoded array and mapping dictionary
     for i, value in enumerate(unique_values):
         one_hot_encoded_array[:, i] = (inverse_indices == i)
-        mapping_dict[value] = i
     
     # Return the one-hot encoded array and mapping dictionary
-    return cp.asnumpy(one_hot_encoded_array), mapping_dict
+    return cp.asnumpy(one_hot_encoded_array)
 
-def one_hot_decode(y, mapping_dict=None):
+def one_hot_decode(y):
     """
-    Given a mapping_dict or not. Decode the one-hot-encoded matrix.
+    Decode the one-hot-encoded matrix.
 
     Input:
         y:
             Some one-hot encoded array
-        mapping_dict:
-            ...TODO
     Output:
         array:
-            A decoded cupy ndaaray.
+            A decoded numpy ndaaray.
     """
+    # to decode the one hot matrix 
+    return np.argmax(y, axis=1) 
 
-def createTrainValSplit(X_train, y_train, val_ratio=0.2):
+def createTrainValSplit(X, y, val_ratio=0.2):
     """
     Creates the train-validation split with shuffle.
 
@@ -154,12 +134,35 @@ def createTrainValSplit(X_train, y_train, val_ratio=0.2):
 
     def shuffle(X, y):
         # shuffle X and y at the same time
-        shuffler = np.random.permutation()
+        shuffler = np.random.permutation(len(X))
+        return X[shuffler,], y[shuffler,]
 
+    X, y = shuffle(X, y)
+
+    # split by the ratio
+    train_ratio = 1 - val_ratio
+    X_train = X[:int(train_ratio*len(X))]
+    X_val = X[int(train_ratio*len(X)):]
+    y_train = y[:int(train_ratio*len(X))]
+    y_val = y[int(train_ratio*len(X)):]
+
+    return X_train, y_train, X_val, y_val
+
+# Metrics Functions
+def calculateAcc(y,t): 
+    """
+    Calculates the accuracy between y and t
+    args:
+        y: Predicted Probabilities
+        t: Labels in one hot encoding
+    returns:
+        the number of correct predictions
+    """
+    accuracy = np.average(t.reshape(-1) == y.reshape(-1)) #Reshape the labels and then compare to accuracy
+    return accuracy
 
 # Following functions are directly relate to data loading
-
-def load_data(path, axis=0):
+def load_data(path, axis=1):
     """
     Loads, splits the dataset into train, val, and test sets and also normalizes the data
 
@@ -193,18 +196,26 @@ def load_data(path, axis=0):
     val_images = []
     val_labels = []
 
-    for i in range(1, tran_batch_files+1):
+    # there are multiple train data files
+    for i in range(1, train_batch_files+1):
         # load all the train image and labels
         images_dict = unpickle(os.path.join(file_path, f"data_batch_{i}"))
         data = images_dict[b'data']
-        label = iamges_dict[b'labels']
+        label = images_dict[b'labels']
         train_images.extend(data)
         train_labels.extend(label)
         
-    # convert from list to numpy arrays (should be in cupy, but for space efficency)
+    # convert from list to numpy arrays
     train_iamges = np.array(train_images)
     train_labels = np.array(train_labels).reshape((len(train_labels), -1)) # flaten and (len, 1)
-    train_images, train_labels, val_images, val_labels = 
+    train_images, train_labels, val_images, val_labels = createTrainValSplit(train_images,train_labels)
+
+    # normalize and one-hot-encode
+    train_normalized_images = normalize_data(train_images, axis=axis)
+    train_one_hot_labels = one_hot_encode(train_labels)
+
+    val_normalized_images = normalize_data(val_images, axis=axis)
+    val_one_hot_labels = one_hot_encode(val_labels)
 
 
 
