@@ -150,7 +150,7 @@ class Regularization():
         """
         The L1 regularization.
         """
-        return (w * 0) + 1.0
+        return (w > 0) * 1.0
 
 
 class Layer():
@@ -174,6 +174,7 @@ class Layer():
         self.gradient = None                    # store the gradient without learning rate
         self.activation = activation            # Activation function
         self.acc_gradient = self.w * 0          # initilize the accumulated gradient term
+        self.out_units = out_units
 
     def __call__(self, x):
         """
@@ -195,11 +196,9 @@ class Layer():
         """
         Compute the forward pass (activation of the weighted input) through the layer here and return it.
         """
-        self.x = x                                  # store the last unit's output (n * in_units)
+        self.x = Util.append_bias(x)                # store the last unit's output (n * in_units)
         self.a = self.x @ self.w                    # store the output without activation (n * out_units)
         self.z = self.activation.forward(self.a)    # store the output with activation (n * out_units)
-
-        self.z = Util.append_bias(self.z)           # append bias value
 
         return self.z
 
@@ -265,26 +264,26 @@ class MLPClassifier():
         Create the Neural Network using config.
         """
         self.layers = []                                    # Store all layers in this list.
-        self.num_layers = len(config['layer_specs']) - 1    # Set num layers here
+        self.num_layers = len(config.layer_specs) - 1    # Set num layers here
         self.x = None                                       # Save the input to forward in this
         self.y = None                                       # For saving the output vector of the model
         self.targets = None                                 # For saving the targets
-        self.learning_rate = config['learning_rate']
-        self.momentum = config['momentum']
-        self.momentum_gamma = config['momentum_gamma']                      # the momentum gamma coefficient
+        self.learning_rate = config.learning_rate
+        self.momentum = config.momentum
+        self.momentum_gamma = config.momentum_gamma                      # the momentum gamma coefficient
         self.regularization = Regularization([config.L1_constant, config.L2_constant])                              # initilize the regularization
-        self.reg_coe = [config['L1_constant'], config['L2_constant']]       # the regularization coefficient
+        self.reg_coe = [config.L1_constant, config.L2_constant]       # the regularization coefficient
 
         # Add layers specified by layer_specs.
         for i in range(self.num_layers):
             if i < self.num_layers - 1:
                 self.layers.append(
-                    Layer(config['layer_specs'][i], config['layer_specs'][i + 1], Activation(config['activation']))
+                    Layer(config.layer_specs[i], config.layer_specs[i + 1], Activation(config.activation))
                     )
                         
             elif i == self.num_layers - 1:
                 self.layers.append(
-                    Layer(config['layer_specs'][i], config['layer_specs'][i + 1], Activation("output"))
+                    Layer(config.layer_specs[i], config.layer_specs[i + 1], Activation("output"))
                     )
 
     def __call__(self, x, targets=None):
@@ -346,7 +345,7 @@ class MLPClassifier():
             z_last = layer.x 
 
             # calculate the layer gradient 
-            layer_gradient = layer.calculate_gradient(learning_rate, z_last, layer.delta, self.reg_coe, self.regularization)            
+            layer_gradient = layer.calculate_gradient(learning_rate, z_last, layer.delta, self.regularization)            
             
             if self.momentum:
                 # if use momentum method

@@ -3,6 +3,7 @@ import numpy as np
 import cupy as cp
 import Util
 import copy
+from tqdm import tqdm as progress_bar
 from NeuralNet import *
 
 class Config():
@@ -53,8 +54,9 @@ class Model():
         Initilize the model
         """
         self.model = MLPClassifier(config)
+        self.config = config
 
-    def train(self, X_train, y_train, X_valid, y_valid, config):
+    def train(self, X_train, y_train, X_valid, y_valid):
         """
         Train the model based on given training data and validation data.
         Learns the weight.
@@ -77,13 +79,13 @@ class Model():
             best_stopping - the epochs that generate the best model
         """
 
-        batch_size = config.batch_size
-        epochs = config.epochs
-        early_stop = config.early_stop
-        early_stop_epoch = config.early_stop_epoch
+        batch_size = self.config.batch_size
+        epochs = self.config.epochs
+        early_stop = self.config.early_stop
+        early_stop_epoch = self.config.early_stop_threshold
 
         # prepare the decode label for checking accuracy
-        y_valid_decode = Util.onehot_decode(y_valid)
+        y_valid_decode = Util.one_hot_decode(y_valid)
 
         # change the validation set into cupy array for validation usage
         X_valid = cp.array(X_valid)
@@ -128,7 +130,7 @@ class Model():
 
                 # accuracy
                 y_batch_pred_decode = Util.one_hot_decode(cp.asnumpy(self.model.y))
-                y_batch_decode = Util.onehot_decode(cp.asnumpy(y_batch))
+                y_batch_decode = Util.one_hot_decode(cp.asnumpy(y_batch))
                 train_acc = Util.calculateAcc(y_batch_pred_decode, y_batch_decode)
                 epoch_train_acc.append(train_acc) # record the train accuracy
 
@@ -140,9 +142,9 @@ class Model():
 
             # run the forward with validation set and calculate statistics
             val_loss = self.model.forward(X_valid, y_valid)
-            val_loss_lst.append(cp.asnumpy(val_loss))
+            val_loss_lst.append(np.average(cp.asnumpy(val_loss)))
             # get the accuracy
-            y_pred_decode = Util.onehot_decode(cp.asnumpy(self.model.y)) # directly decode from the softmax
+            y_pred_decode = Util.one_hot_decode(cp.asnumpy(self.model.y)) # directly decode from the softmax
             accuracy = Util.calculateAcc(y_pred_decode, y_valid_decode)
             val_acc_lst.append(accuracy)
 
@@ -167,6 +169,19 @@ class Model():
         del(y_valid)
 
         if early_stop:
-            return best_model, train_loss_lst, train_acc_lst, val_loss_lst, val_acc_lst, best_stopping
+            output = {'best_model': best_model, 'train_loss': train_loss_lst, 'train_accuracy': train_acc_lst,\
+                'validation_loss': val_loss_lst, 'validation_accuracy': val_acc_lst, 'best_stopping_epoch': best_stopping}
+            return output
         else:
-            return self.model, train_loss_lst, train_acc_lst, val_loss_lst, val_acc_lst, best_stopping
+            output = {'model': self.model, 'train_loss': train_loss_lst, 'train_accuracy': train_acc_lst,\
+                'validation_loss': val_loss_lst, 'validation_accuracy': val_acc_lst, 'best_stopping_epoch': best_stopping}
+
+    def forward(self, X_test):
+        # simple forward function to output result
+
+        X_test = cp.array(X_test) # transfer into GPU
+
+        self.model.forward(X_test) # forward
+        z = cp.asnumpy(self.model.y) 
+
+        return Util.one_hot_decode(z)

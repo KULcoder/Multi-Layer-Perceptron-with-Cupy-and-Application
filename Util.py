@@ -79,9 +79,9 @@ def one_hot_encode(array):
     """
 
     # ensure right input datatype
-    if type(inp) == np.ndarray:
-        inp = cp.array(inp)
-    elif type(inp) == cp.ndarray:
+    if type(array) == np.ndarray:
+        array = cp.array(array)
+    elif type(array) == cp.ndarray:
         pass
     else:
         print("Unknown datatype")
@@ -162,7 +162,14 @@ def calculateAcc(y,t):
     return accuracy
 
 # Following functions are directly relate to data loading
-def load_data(path, axis=1):
+
+# some constants
+datasetDir="./data/"
+cifar10_directory= "cifar-10-batches-py"
+cifar10_trainBatchFiles = 5
+
+
+def load_data(path=datasetDir, axis=0):
     """
     Loads, splits the dataset into train, val, and test sets and also normalizes the data
 
@@ -189,7 +196,7 @@ def load_data(path, axis=1):
             dict = pickle.load(fo, encoding='bytes')
         return dict
 
-    file_path = os.path.join(path, some_constants_for_directory)
+    file_path = os.path.join(path, cifar10_directory)
 
     train_images = []
     train_labels = []
@@ -197,7 +204,7 @@ def load_data(path, axis=1):
     val_labels = []
 
     # there are multiple train data files
-    for i in range(1, train_batch_files+1):
+    for i in range(1, cifar10_trainBatchFiles+1):
         # load all the train image and labels
         images_dict = unpickle(os.path.join(file_path, f"data_batch_{i}"))
         data = images_dict[b'data']
@@ -206,7 +213,7 @@ def load_data(path, axis=1):
         train_labels.extend(label)
         
     # convert from list to numpy arrays
-    train_iamges = np.array(train_images)
+    train_images = np.array(train_images)
     train_labels = np.array(train_labels).reshape((len(train_labels), -1)) # flaten and (len, 1)
     train_images, train_labels, val_images, val_labels = createTrainValSplit(train_images,train_labels)
 
@@ -217,7 +224,16 @@ def load_data(path, axis=1):
     val_normalized_images = normalize_data(val_images, axis=axis)
     val_one_hot_labels = one_hot_encode(val_labels)
 
-
+    # for the test data
+    test_images_dict = unpickle(os.path.join(file_path, f"test_batch"))
+    test_data = test_images_dict[b'data'] # extract data matrix
+    test_labels = test_images_dict[b'labels'] # extract label
+    test_images = np.array(test_data)
+    test_labels = np.array(test_labels).reshape((len(test_labels),-1))
+    # normalize and one-hot-encode
+    test_normalized_images = normalize_data(test_images, axis=axis) 
+    test_one_hot_labels = one_hot_encode(test_labels)
+    return train_normalized_images, train_one_hot_labels, val_normalized_images, val_one_hot_labels,  test_normalized_images, test_one_hot_labels
 
 def generate_minibatches(dataset, batch_size=64):
     """
