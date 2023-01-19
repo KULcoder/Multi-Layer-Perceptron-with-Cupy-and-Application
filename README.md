@@ -6,7 +6,7 @@ This is an implementation of <u>Multi-Layer-Perceptron</u> model with <u>Stochas
 
 ## Required Dependencies (Packages)
 
-For acceleration concern, this project uses `CUPY`, which is a GPU accelerated `NumPy` for the training process. In theory, all the `CuPy` method in this directly replaced by their corresponding `NumPy` method.
+For acceleration concern, this project uses `CuPy`, which is a GPU accelerated `NumPy` for the training process. In theory, all the `CuPy` method in this project can be directly replaced by their corresponding `NumPy` method.
 
 - `numpy`
 - `cupy`
