@@ -65,22 +65,22 @@ The foundation to all modern deep neural network: back propagation. Within this 
 
 - Learning Rule:
   
-  ```math
-  w_{ij} = w_{ij} - \alpha \frac{\part J}{\part w_{ij}} = w_{ij} +\alpha \delta_j z_i
-  ```
+```math
+w_{ij} = w_{ij} - \alpha \frac{\part J}{\part w_{ij}} = w_{ij} +\alpha \delta_j z_i
+```
 
 - Definition on $\delta$:
 
   - When $j$ is for the output layer units
     
-    $$
-    \delta_j = t_j - y_j
-    $$
+ $$
+ \delta_j = t_j - y_j
+ $$
 
   - When $j$ is for the hidden layer units
     
-    $$
-    \delta_j = g'(a_j)\sum_k \delta_k w_{jk}
-    $$
+ $$
+ \delta_j = g'(a_j)\sum_k \delta_k w_{jk}
+ $$
     
 
