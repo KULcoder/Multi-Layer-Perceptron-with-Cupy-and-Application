@@ -3,8 +3,6 @@ import os, gzip
 import numpy as np
 import cupy as cp 
 import pickle
-import matplotlib.pyplot as plt
-import pandas as pd
 
 # if something does not involved too much matrix operation, it shouldn't use CUPY
 

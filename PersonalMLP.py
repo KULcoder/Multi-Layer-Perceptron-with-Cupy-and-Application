@@ -3,7 +3,6 @@ import numpy as np
 import cupy as cp
 import Util
 import copy
-from tqdm import tqdm as progress_bar
 from NeuralNet import *
 
 class Config():
