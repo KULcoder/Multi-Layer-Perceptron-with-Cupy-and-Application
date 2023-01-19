@@ -65,9 +65,9 @@ The foundation to all modern deep neural network: back propagation. Within this 
 
 - Learning Rule:
   
-  $$
+  ```math
   w_{ij} = w_{ij} - \alpha \frac{\part J}{\part w_{ij}} = w_{ij} +\alpha \delta_j z_i
-  $$
+  ```
 
 - Definition on $\delta$:
 
