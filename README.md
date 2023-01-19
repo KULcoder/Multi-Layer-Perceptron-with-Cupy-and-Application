@@ -64,6 +64,7 @@ For acceleration concern, this project uses `CUPY`, which is a GPU accelerated `
 The foundation to all modern deep neural network: back propagation. Within this project, the back-propagation is plainly implemented by `CuPy` following below equations:
 
 - Learning Rule:
+  
   $$
   w_{ij} = w_{ij} - \alpha \frac{\part J}{\part w_{ij}} = w_{ij} +\alpha \delta_j z_i
   $$
@@ -71,11 +72,13 @@ The foundation to all modern deep neural network: back propagation. Within this 
 - Definition on $\delta$:
 
   - When $j$ is for the output layer units
+    
     $$
     \delta_j = t_j - y_j
     $$
 
   - When $j$ is for the hidden layer units
+    
     $$
     \delta_j = g'(a_j)\sum_k \delta_k w_{jk}
     $$
