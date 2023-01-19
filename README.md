@@ -99,6 +99,10 @@ $$
  \delta_j = g'(a_j)\sum_k \delta_k w_{jk}
 $$
 
+### Activation Function
+
+This project enables three types of activation functions: 'sigmoid', 'tanh', 'ReLU'.
+
 ### Stochastic Gradient Descent
 
 There are many learning rule (optimizer) methods for deep learning. This project simply utilize the Mini-Batch Stochastic Gradient Descent.
