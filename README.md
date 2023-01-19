@@ -1,4 +1,4 @@
-# Multi-Layer-Perceptron-with-Numpy-and-Application
+# Multi-Layer-Perceptron-with-Cupy-and-Application
 
 *This project is inspired from a deep learning course in University of California, San Diego. All rights reserved*. 
 
