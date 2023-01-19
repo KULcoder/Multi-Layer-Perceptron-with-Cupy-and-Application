@@ -80,9 +80,11 @@ momentum_gamma: 0.9
 The foundation to all modern deep neural network: back propagation. Within this project, the back-propagation is plainly implemented by `CuPy` following below equations:
 
 Learning Rule:
+
 $$
 w_{ij} = w_{ij} - \alpha \frac{\partial J}{\partial w_{ij}} = w_{ij} +\alpha \delta_j z_i
 $$
+
 Definition on $\delta$ (recursively):
 
 - When $j$ is for the output layer units
@@ -114,6 +116,7 @@ As discussed by Maximum Likelihood Estimation, the correct loss function chosen 
 Allowing gradient to be affect by accumulated gradient, which theoretically accelerate the training in right direction and helps loss function not to jump over minimum.
 
 Using following equation:
+
 $$
 \delta = c\cdot \delta_{old} + (1-c) \cdot \delta_{new}
 $$
